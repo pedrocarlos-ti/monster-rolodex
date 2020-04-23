@@ -1,26 +1,51 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component, ChangeEvent } from 'react';
+import { CardList } from './components/card-list/card-list.component';
+import { SearchBox } from './components/search-box/search-box.component';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+interface State {
+  monsters: MonsterInterface[];
+  searchField: string;
 }
 
-export default App;
+interface MonsterInterface {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export default class App extends Component<{}, State> {
+  state: State = {
+    monsters: [],
+    searchField: '',
+  };
+
+  componentDidMount(): void {
+    fetch('https://jsonplaceholder.typicode.com/users')
+      .then(response => response.json())
+      .then(data => this.setState({ monsters: data }));
+  }
+
+  searchMonster = (element: React.ChangeEvent<HTMLInputElement>): void => {
+    this.setState({
+      searchField: element.target.value,
+    });
+  };
+
+  render(): React.ReactElement {
+    const { monsters, searchField } = this.state;
+    const filteredMonsters = monsters.filter(monster =>
+      monster.name.toLowerCase().includes(searchField.toLowerCase()),
+    );
+
+    return (
+      <div className="App">
+        <h1>Monsters Rolodex</h1>
+        <SearchBox
+          placeholder="search monsters"
+          handleChange={this.searchMonster}
+        />
+        <CardList monsters={filteredMonsters} />
+      </div>
+    );
+  }
+}
